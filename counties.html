@@ -4,7 +4,6 @@
 </head>
 <body>
     <div id="myDiv"></div>
-    <!-- this was so annoying LMAO, didn't play nice with async/await -->
     <script type="module">
         const res = await fetch('data/ca_counties_pc.geojson');
         const county_json = await res.json();
@@ -16,7 +15,7 @@
             type: "choroplethmap",
             locations: county_names,
             z: county_values,
-            geojson: "data/ca_counties_pc.geojson",
+            geojson: county_json,
             featureidkey: "properties.CountyName"
         }];
 
