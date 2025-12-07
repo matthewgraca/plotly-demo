@@ -20,3 +20,7 @@ So to handle this, you need to *reproject* the GeoJSON.
 - Now, point Plotly to this geojson `data/ca_counties_pc.geojson` and you're good.
 
 Basically, it's a limitation on Plotly where you have to have your data in `EPSG:4326`. I'm guessing it's because they don't want to be burdened with becoming a full-on GIS suite and stay humble to being a basic plotter, but that's a guess.
+
+# Output
+The final output should look like so:
+![](data/newplot.png)
