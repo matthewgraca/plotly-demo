@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<head>
+    <script src="https://cdn.plot.ly/plotly-3.3.0.min.js" charset="utf-8"></script>
+</head>
+<body>
+    <div id="myDiv"></div>
+    <script type="module">
+        const res = await fetch('data/ca_fires_pc.geojson');
+        const fires_json = await res.json();
+
+        const fire_names = fires_json.features.map(
+            item => item.properties.FIRE_NAME
+        );
+        const fire_color = fires_json.features.map(
+            item => item.properties.GIS_ACRES
+        );
+
+        var data = [{
+            type: "choroplethmap",
+            locations: fire_names,
+            z: fire_color,
+            geojson: fires_json,
+            featureidkey: "properties.FIRE_NAME"
+        }];
+
+        var layout = {
+            title: {
+                text: "Recent Large Fire Perimeters (GT 5000 acres)"
+            },
+            map: {
+                center: {lon: -117, lat: 35},
+                zoom: 3.5,
+            }
+        };
+
+        Plotly.newPlot('myDiv', data, layout, 
+            {margin: { t: 0, l: 0, r: 0, b: 0 }},
+            {responsive: true}
+        );
+    </script>
+</body>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  #myDiv {
+    width: 100vw;
+    height: 100vh;
+  }
+</style>
+</html>
