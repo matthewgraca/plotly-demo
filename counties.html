@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+    <script src="https://cdn.plot.ly/plotly-3.3.0.min.js" charset="utf-8"></script>
+</head>
+<body>
+    <div id="myDiv"></div>
+    <!-- this was so annoying LMAO, didn't play nice with async/await -->
+    <script type="module">
+        const res = await fetch('data/ca_counties_pc.geojson');
+        const county_json = await res.json();
+
+        const county_names = county_json.features.map(item => item.properties.CountyName);
+        const county_values = county_names.map(item => Math.random() - 0.5);
+
+        var data = [{
+            type: "choroplethmap",
+            locations: county_names,
+            z: county_values,
+            geojson: "data/ca_counties_pc.geojson",
+            featureidkey: "properties.CountyName"
+        }];
+
+        var layout = {
+            map: {
+                center: {lon: -117, lat: 35},
+                zoom: 3.5,
+            },
+            width: 1200,
+            height: 800
+        };
+
+        Plotly.newPlot('myDiv', data, layout);
+            </script>
+</body>
+</html>
