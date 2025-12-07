@@ -7,7 +7,9 @@ This repo looks at plotting GeoJSON data using Plotly.js
 
 # Extra steps
 ## Dataset
-To get the counties data, go to `data.ca.gov/dataset`. They got a lot of GeoJSON datasets you can play around with!
+To get the counties data, go to data.ca.gov/dataset. They got a lot of GeoJSON datasets you can play around with!
+- Here's the specific link: https://data.ca.gov/dataset/california-counties
+- And you can check out what it's supposed to look like here: https://gis.data.ca.gov/datasets/CDEGIS::california-counties-3
 
 ## Reprojection
 Unfortunately, you might get data that's in a coordinate system that's not supported.
