@@ -5,8 +5,21 @@
 <body>
     <div id="myDiv"></div>
     <script type="module">
-        const res = await fetch('data/ca_fires_pc.geojson');
-        const fires_json = await res.json();
+        async function fetch_json(file){
+            try{
+                const res = await fetch(file);
+
+                if (!res.ok){
+                    throw new Error(`Bad status: ${res.status}`);
+                }
+
+                return await res.json();
+            } catch(error){
+                console.error(`${error}`);
+            }
+        }
+
+        const fires_json = await fetch_json('data/ca_fires_pc.geojson');
 
         const fire_names = fires_json.features.map(
             item => item.properties.FIRE_NAME
