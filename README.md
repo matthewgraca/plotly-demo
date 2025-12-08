@@ -25,4 +25,10 @@ Basically, it's a limitation on Plotly where you have to have your data in `EPSG
 
 # Output
 The final output should look like so:
-![](data/newplot.png)
+![](data/counties.png)
+
+And here's one for the wildfire dataset:
+- Open the html file; `http://localhost:8080/fires.html`
+- Dataset sourced from https://data.ca.gov/dataset/recent-large-fire-perimeters-gt-5000-acres
+
+![](data/fires.png)
