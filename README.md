@@ -5,6 +5,10 @@ This repo looks at plotting GeoJSON data using Plotly.js
 1. Spin up an http server; `python3 -m http.server 8080`
 2. Open the html file; `http://localhost:8080/counties.html`
 
+I just set up GitHub Pages, so alternatively, you can simply go to:
+- Counties: https://matthewgraca.github.io/plotly-demo/counties.html
+- Fires: https://matthewgraca.github.io/plotly-demo/fires.html
+
 # Extra steps
 ## Dataset
 To get the counties data, go to data.ca.gov/dataset. They got a lot of GeoJSON datasets you can play around with!
@@ -28,7 +32,7 @@ The final output should look like so:
 ![](data/counties.png)
 
 And here's one for the wildfire dataset:
-- Open the html file; `http://localhost:8080/fires.html` (renamed to `index.html` to use GitHub Pages hosting)
+- Open the html file; `http://localhost:8080/fires.html`
 - Dataset sourced from https://data.ca.gov/dataset/recent-large-fire-perimeters-gt-5000-acres
 
 ![](data/fires.png)
