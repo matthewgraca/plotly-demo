@@ -28,7 +28,7 @@ The final output should look like so:
 ![](data/counties.png)
 
 And here's one for the wildfire dataset:
-- Open the html file; `http://localhost:8080/fires.html`
+- Open the html file; `http://localhost:8080/fires.html` (renamed to `index.html` to use GitHub Pages hosting)
 - Dataset sourced from https://data.ca.gov/dataset/recent-large-fire-perimeters-gt-5000-acres
 
 ![](data/fires.png)
