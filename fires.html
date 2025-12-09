@@ -3,7 +3,7 @@
     <script src="https://cdn.plot.ly/plotly-3.3.0.min.js" charset="utf-8"></script>
 </head>
 <body>
-    <div id="myDiv"></div>
+    <div id="map"></div>
     <script type="module">
         async function fetch_json(file){
             try{
@@ -19,7 +19,12 @@
             }
         }
 
-        const fires_json = await fetch_json('data/ca_fires_pc.geojson');
+        function reformat_date(str){
+            const date_str = new Date(str);
+            return `${date_str.getFullYear()}-${date_str.getMonth()}-${date_str.getDate()}`;
+        }
+
+        const fires_json = await fetch_json("data/ca_fires_pc.geojson");
 
         const fire_names = fires_json.features.map(
             item => item.properties.FIRE_NAME
@@ -27,13 +32,22 @@
         const fire_color = fires_json.features.map(
             item => item.properties.GIS_ACRES
         );
+        const fire_alarm_date = fires_json.features.map(
+            item => item.properties.ALARM_DATE
+        );
 
+        //const zip = (a, b) => a.map((val, i) => val + " " + b[i]);
+
+        // https://plotly.com/javascript/reference/choropleth/
         var data = [{
             type: "choroplethmap",
             locations: fire_names,
             z: fire_color,
             geojson: fires_json,
-            featureidkey: "properties.FIRE_NAME"
+            featureidkey: "properties.FIRE_NAME",
+            //hovertemplate: "z: %{fire_color}"
+            //hovertext: fire_alarm_date, // gets associated with the location text
+            marker : {opacity: 0.75},
         }];
 
         var layout = {
@@ -46,10 +60,26 @@
             }
         };
 
-        Plotly.newPlot('myDiv', data, layout, 
+        Plotly.newPlot("map", data, layout, 
             {margin: { t: 0, l: 0, r: 0, b: 0 }},
             {responsive: true}
         );
+
+        // other cool events: https://plotly.com/javascript/plotlyjs-events/
+        var myPlot = document.getElementById("map");
+
+        myPlot.on("plotly_click", function(data) {
+            const p = data.points[0].properties;
+            //console.log(p);
+            const message = `
+            Fire Name: ${p.FIRE_NAME}
+            Acre burned: ${p.GIS_ACRES}
+            Alarm Date: ${p.ALARM_DATE}
+            Containment Date: ${p.CONT_DATE}
+            Additional Comments: ${p.COMMENTS ?? "None"}
+            `;
+            alert(message);
+        });
     </script>
 </body>
 <style>
@@ -57,7 +87,7 @@
     height: 100%;
     margin: 0;
   }
-  #myDiv {
+  #map {
     width: 100vw;
     height: 100vh;
   }
