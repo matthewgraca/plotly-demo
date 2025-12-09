@@ -65,19 +65,29 @@
             {responsive: true}
         );
 
+        // TODO idea: info box shows up top right instead of alert?
+        // TODO idea: collect stats that can be graphed; fire size, histogram of cause of fire, year of fire occurences.
         // other cool events: https://plotly.com/javascript/plotlyjs-events/
         var myPlot = document.getElementById("map");
 
         myPlot.on("plotly_click", function(data) {
             const p = data.points[0].properties;
             //console.log(p);
-            const message = `
-            Fire Name: ${p.FIRE_NAME}
-            Acre burned: ${p.GIS_ACRES}
-            Alarm Date: ${p.ALARM_DATE}
-            Containment Date: ${p.CONT_DATE}
-            Additional Comments: ${p.COMMENTS ?? "None"}
-            `;
+            // bless chatgpt for somehow finding this from the depths of hell: https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/data-dictionary-updated-april-2025.pdf?hash=371C2A47D6A96261C91E0008A1BABC20&rev=99e4dccd9d654a6f9ed9556c0b7e3445
+            const fire_cause = [
+                "null", "Lightning", "Equipment Use", "Smoking", "Campfire",
+                "Debris", "Railroad", "Arson", "Playing with fire", 
+                "Miscellaneous", "Vehicle", "Powerline", "Firefighter Training",
+                "Non-Firefighter Training", "Unknown/Unidentified",
+                "Structure", "Aircraft", "Volcanic"
+            ]
+            // ...why it gotta be this ugly
+            const message = `Fire Name: ${p.FIRE_NAME}
+Acre burned: ${p.GIS_ACRES}
+Alarm Date: ${p.ALARM_DATE}
+Containment Date: ${p.CONT_DATE}
+Cause: ${fire_cause[parseInt(p.CAUSE)]}
+Additional Comments: ${p.COMMENTS ?? "None"}`;
             alert(message);
         });
     </script>
