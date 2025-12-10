@@ -1,9 +1,52 @@
 <!DOCTYPE html>
 <head>
     <script src="https://cdn.plot.ly/plotly-3.3.0.min.js" charset="utf-8"></script>
+    <!--
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+      }
+      #map {
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+    -->
+    <style>
+        .container {
+            width: 100%;
+            margin: auto;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;   /* spacing between small graphs */
+            margin-top: 20px;
+        }
+
+        .small-plot {
+            flex: 1;
+            height: 500px;
+        }
+
+        .large-plot {
+            width: 100%;
+            height: 800px;
+        }
+    </style>
 </head>
 <body>
-    <div id="map"></div>
+    <div class="container">
+        <div id="map" class="large-plot"></div>
+        <div class="row">
+            <div id="bar1" class="small-plot"></div>
+            <div id="bar2" class="small-plot"></div>
+        </div>
+        <div id="scatter1" class="large-plot"></div>
+    </div>
+
     <script type="module">
         async function fetch_json(file){
             try{
@@ -19,9 +62,13 @@
             }
         }
 
-        function reformat_date(str){
-            const date_str = new Date(str);
-            return `${date_str.getFullYear()}-${date_str.getMonth()}-${date_str.getDate()}`;
+        function frequency_of(arr, n_buckets){
+            const freq = arr.reduce(
+                (acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map()
+            );
+            const range = Array.from({ length: n_buckets }, (_, i) => i + 1);
+            return range.map(idx => freq.has(idx) ? freq.get(idx) : 0);
+
         }
 
         const fires_json = await fetch_json("data/ca_fires_pc.geojson");
@@ -29,24 +76,49 @@
         const fire_names = fires_json.features.map(
             item => item.properties.FIRE_NAME
         );
-        const fire_color = fires_json.features.map(
+        const fire_acres = fires_json.features.map(
             item => item.properties.GIS_ACRES
         );
         const fire_alarm_date = fires_json.features.map(
             item => item.properties.ALARM_DATE
         );
-
-        //const zip = (a, b) => a.map((val, i) => val + " " + b[i]);
+        const fire_months = fire_alarm_date.map(
+            datestr => (new Date(datestr)).getMonth() + 1
+        );
+        const month_freq = frequency_of(fire_months, 12);
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const fire_cause = [
+            "null", "Lightning", "Equipment Use", "Smoking", "Campfire",
+            "Debris", "Railroad", "Arson", "Playing with fire", 
+            "Miscellaneous", "Vehicle", "Powerline", "Firefighter Training",
+            "Non-Firefighter Training", "Unknown/Unidentified",
+            "Structure", "Aircraft", "Volcanic"
+        ];
+        const fire_cause_int = fires_json.features.map(
+            item => item.properties.CAUSE
+        );
+        const cause_freq = frequency_of(fire_cause_int, fire_cause.length - 1);
+        const fire_contain_date = fires_json.features.map(
+            item => item.properties.CONT_DATE
+        );
+        const days_to_contain = fire_contain_date.map((contain_date, idx) => {
+            const alarm_date = fire_alarm_date[idx];
+            const end = contain_date == null ? null : new Date(contain_date);
+            const start = alarm_date == null ? null : new Date(alarm_date);
+            const diff = (end == null || start == null) ? -1 : end - start;
+            return (diff) / (1000 * 60 * 60 * 24);
+        });
 
         // https://plotly.com/javascript/reference/choropleth/
         var data = [{
             type: "choroplethmap",
             locations: fire_names,
-            z: fire_color,
+            z: fire_acres,
             geojson: fires_json,
             featureidkey: "properties.FIRE_NAME",
-            //hovertemplate: "z: %{fire_color}"
-            //hovertext: fire_alarm_date, // gets associated with the location text
             marker : {opacity: 0.75},
         }];
 
@@ -60,30 +132,71 @@
             }
         };
 
+        // neat trick; all Plotly methods return a Promise, so you can use it as a signal to unload a loading screen, or do something else
+        /*
+        Plotly.newPlot("map", data, layout, 
+            {margin: { t: 0, l: 0, r: 0, b: 0 }},
+            {responsive: true}
+        ).then(alert("Finshed loading"));
+        */
         Plotly.newPlot("map", data, layout, 
             {margin: { t: 0, l: 0, r: 0, b: 0 }},
             {responsive: true}
         );
 
+        const bar1_data = [{
+            x: fire_cause.slice(1, fire_cause.length),
+            y: cause_freq,
+            type: "bar",
+            marker: {color: "rgb(240, 130, 5)"}
+            //orientation: "h"
+        }];
+        const bar1_layout = {
+            title: {
+                text: "Cause of fires"
+            }
+        };
+
+        Plotly.newPlot("bar1", bar1_data, bar1_layout);
+
+        const bar2_data = [{
+            x: months,
+            y: month_freq,
+            type: "bar",
+            //orientation: "h"
+        }];
+        const bar2_layout = {
+            title: {
+                text: "Months when fires started"
+            }
+        };
+        Plotly.newPlot("bar2", bar2_data, bar2_layout);
+
+        const scatter1_data = [{
+            x: days_to_contain,
+            y: fire_acres,
+            mode: "markers",
+            text: fire_names,
+            marker: {size: 12, color: "rgb(66, 128, 65)"},
+            type: "scatter",
+        }];
+        const scatter1_layout = {
+            title: {
+                text: "Size of fire vs days needed to contain it"
+            }
+        };
+        Plotly.newPlot("scatter1", scatter1_data, scatter1_layout);
+
         // TODO idea: info box shows up top right instead of alert?
         // TODO idea: collect stats that can be graphed; fire size, histogram of cause of fire, year of fire occurences.
         // other cool events: https://plotly.com/javascript/plotlyjs-events/
-        var myPlot = document.getElementById("map");
+        var map_plot = document.getElementById("map");
 
-        myPlot.on("plotly_click", function(data) {
+        map_plot.on("plotly_click", function(data) {
             const p = data.points[0].properties;
-            //console.log(p);
-            // bless chatgpt for somehow finding this from the depths of hell: https://34c031f8-c9fd-4018-8c5a-4159cdff6b0d-cdn-endpoint.azureedge.net/-/media/calfire-website/what-we-do/fire-resource-assessment-program---frap/data-dictionary-updated-april-2025.pdf?hash=371C2A47D6A96261C91E0008A1BABC20&rev=99e4dccd9d654a6f9ed9556c0b7e3445
-            const fire_cause = [
-                "null", "Lightning", "Equipment Use", "Smoking", "Campfire",
-                "Debris", "Railroad", "Arson", "Playing with fire", 
-                "Miscellaneous", "Vehicle", "Powerline", "Firefighter Training",
-                "Non-Firefighter Training", "Unknown/Unidentified",
-                "Structure", "Aircraft", "Volcanic"
-            ]
             // ...why it gotta be this ugly
             const message = `Fire Name: ${p.FIRE_NAME}
-Acre burned: ${p.GIS_ACRES}
+Acres burned: ${p.GIS_ACRES}
 Alarm Date: ${p.ALARM_DATE}
 Containment Date: ${p.CONT_DATE}
 Cause: ${fire_cause[parseInt(p.CAUSE)]}
@@ -92,14 +205,4 @@ Additional Comments: ${p.COMMENTS ?? "None"}`;
         });
     </script>
 </body>
-<style>
-  html, body {
-    height: 100%;
-    margin: 0;
-  }
-  #map {
-    width: 100vw;
-    height: 100vh;
-  }
-</style>
 </html>
