@@ -1,18 +1,6 @@
 <!DOCTYPE html>
 <head>
     <script src="https://cdn.plot.ly/plotly-3.3.0.min.js" charset="utf-8"></script>
-    <!--
-    <style>
-      html, body {
-        height: 100%;
-        margin: 0;
-      }
-      #map {
-        width: 100vw;
-        height: 100vh;
-      }
-    </style>
-    -->
     <style>
         .container {
             width: 100%;
@@ -22,8 +10,8 @@
         .row {
             display: flex;
             justify-content: space-between;
-            gap: 20px;   /* spacing between small graphs */
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         .small-plot {
@@ -35,11 +23,52 @@
             width: 100%;
             height: 800px;
         }
+
+        .loading-overlay {
+            /* position over parent, centered */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background-color: rgba(255, 255, 255, 0.8); /* semi-transparent bg */
+            z-index: 10; /* Ensure the spinner is above the graph */
+            visibility: hidden; 
+            opacity: 0;
+            transition: visibility 0s, opacity 0.5s linear;
+        }
+
+        .loading-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="map" class="large-plot"></div>
+        <div id="map" class="large-plot">
+            <div class="loading-overlay" id="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+        </div>
         <div class="row">
             <div id="bar1" class="small-plot"></div>
             <div id="bar2" class="small-plot"></div>
@@ -68,8 +97,17 @@
             );
             const range = Array.from({ length: n_buckets }, (_, i) => i + 1);
             return range.map(idx => freq.has(idx) ? freq.get(idx) : 0);
-
         }
+
+        function show_spinner(){
+            document.getElementById("loading-spinner").classList.add("show");
+        }
+
+        function hide_spinner(){
+            document.getElementById("loading-spinner").classList.remove("show");
+        }
+
+        show_spinner();
 
         const fires_json = await fetch_json("data/ca_fires_pc.geojson");
 
@@ -132,17 +170,12 @@
             }
         };
 
-        // neat trick; all Plotly methods return a Promise, so you can use it as a signal to unload a loading screen, or do something else
-        /*
         Plotly.newPlot("map", data, layout, 
             {margin: { t: 0, l: 0, r: 0, b: 0 }},
             {responsive: true}
-        ).then(alert("Finshed loading"));
-        */
-        Plotly.newPlot("map", data, layout, 
-            {margin: { t: 0, l: 0, r: 0, b: 0 }},
-            {responsive: true}
-        );
+        ).then(function() {
+            hide_spinner();
+        });
 
         const bar1_data = [{
             x: fire_cause.slice(1, fire_cause.length),
@@ -188,10 +221,8 @@
         Plotly.newPlot("scatter1", scatter1_data, scatter1_layout);
 
         // TODO idea: info box shows up top right instead of alert?
-        // TODO idea: collect stats that can be graphed; fire size, histogram of cause of fire, year of fire occurences.
         // other cool events: https://plotly.com/javascript/plotlyjs-events/
-        var map_plot = document.getElementById("map");
-
+        map_plot = document.getElementById("map");
         map_plot.on("plotly_click", function(data) {
             const p = data.points[0].properties;
             // ...why it gotta be this ugly
