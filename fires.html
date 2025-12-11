@@ -222,7 +222,7 @@
 
         // TODO idea: info box shows up top right instead of alert?
         // other cool events: https://plotly.com/javascript/plotlyjs-events/
-        map_plot = document.getElementById("map");
+        var map_plot = document.getElementById("map");
         map_plot.on("plotly_click", function(data) {
             const p = data.points[0].properties;
             // ...why it gotta be this ugly
