@@ -74,8 +74,8 @@
             </div>
         </div>
         <div class="row">
-            <div id="bar1" class="small-plot"></div>
-            <div id="bar2" class="small-plot"></div>
+            <div id="pie" class="small-plot"></div>
+            <div id="bar" class="small-plot"></div>
         </div>
         <div id="scatter1" class="large-plot"></div>
     </div>
@@ -142,7 +142,7 @@
         const fire_cause_int = fires_json.features.map(
             item => item.properties.CAUSE
         );
-        const cause_freq = frequency_of(fire_cause_int, fire_cause.length - 1);
+        const fire_cause_str = fire_cause_int.map(cause => fire_cause[parseInt(cause)]);
         const fire_contain_date = fires_json.features.map(
             item => item.properties.CONT_DATE
         );
@@ -181,33 +181,30 @@
             hide_spinner();
         });
 
-        const bar1_data = [{
-            x: fire_cause.slice(1, fire_cause.length),
-            y: cause_freq,
-            type: "bar",
-            marker: {color: "rgb(240, 130, 5)"}
-            //orientation: "h"
+        const pie_data = [{
+            labels: fire_cause_str, // counts occurrences of labels
+            type: "pie",
         }];
-        const bar1_layout = {
+        const pie_layout = {
             title: {
                 text: "Cause of fires"
             }
         };
 
-        Plotly.newPlot("bar1", bar1_data, bar1_layout);
+        Plotly.newPlot("pie", pie_data, pie_layout);
 
-        const bar2_data = [{
+        const bar_data = [{
             x: months,
             y: month_freq,
             type: "bar",
             //orientation: "h"
         }];
-        const bar2_layout = {
+        const bar_layout = {
             title: {
                 text: "Months when fires started"
             }
         };
-        Plotly.newPlot("bar2", bar2_data, bar2_layout);
+        Plotly.newPlot("bar", bar_data, bar_layout);
 
         const scatter1_data = [{
             x: days_to_contain,
