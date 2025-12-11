@@ -225,13 +225,12 @@
         var map_plot = document.getElementById("map");
         map_plot.on("plotly_click", function(data) {
             const p = data.points[0].properties;
-            // ...why it gotta be this ugly
-            const message = `Fire Name: ${p.FIRE_NAME}
-Acres burned: ${p.GIS_ACRES}
-Alarm Date: ${p.ALARM_DATE}
-Containment Date: ${p.CONT_DATE}
-Cause: ${fire_cause[parseInt(p.CAUSE)]}
-Additional Comments: ${p.COMMENTS ?? "None"}`;
+            const message = "Fire Name: " + p.FIRE_NAME + "\n" +
+                "Acres burned: " + p.GIS_ACRES + "\n" +
+                "Alarm Date: " + p.ALARM_DATE + "\n" +
+                "Containment Date: " + p.CONT_DATE + "\n" +
+                "Cause: " + fire_cause[parseInt(p.CAUSE)] + "\n" +
+                "Additional Comments: " + (p.COMMENTS ?? "None");
             alert(message);
         });
     </script>
